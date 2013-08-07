@@ -10,4 +10,4 @@ The book recommends the following exercises:
   * Handle parse failures when talk recieves a value that's not a number
   * Handle when client cuts connection unexpectly (or network failure)
   * Should there be an upper bound on the number of client connections?
-  * -Logging activity to a file (rather then the console)-
+  * ~~Logging activity to a file (rather then the console)~~
