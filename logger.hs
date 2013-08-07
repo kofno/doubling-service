@@ -3,7 +3,6 @@ module Logger ( initLogger
               , logStop
               ) where
 
-
 import System.IO
 import Control.Concurrent
 
