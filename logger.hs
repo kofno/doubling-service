@@ -3,24 +3,25 @@ module Logger ( initLogger
               , logStop
               ) where
 
+
 import System.IO
 import Control.Concurrent
 
-data Logger = Logger Handle (MVar LogCommand)
+data Logger = Logger Handle (Chan LogCommand)
 data LogCommand = Message String | Stop (MVar ())
 
 initLogger :: Handle -> IO Logger
 initLogger hdl = do
   hSetBuffering hdl LineBuffering
-  m <- newEmptyMVar
-  let l = Logger hdl m
+  chan <- newChan
+  let l = Logger hdl chan
   forkFinally (logger l) (\_ -> hClose hdl)
   return l
 
 logger :: Logger -> IO ()
-logger (Logger hdl m) = loop
+logger (Logger hdl chan) = loop
   where loop = do
-          cmd <- takeMVar m
+          cmd <- readChan chan
           case cmd of
                Message msg -> do
                  hPutStrLn hdl msg
@@ -30,10 +31,9 @@ logger (Logger hdl m) = loop
                  putMVar s ()
 
 logMessage :: Logger -> String -> IO ()
-logMessage (Logger _ m) s = putMVar m (Message s)
+logMessage (Logger _ chan) s = writeChan chan (Message s)
 
 logStop :: Logger -> IO ()
-logStop (Logger _ m) = do
+logStop (Logger _ chan) = do
   s <- newEmptyMVar
-  putMVar m (Stop s)
-  takeMVar s
+  writeChan chan (Stop s)
