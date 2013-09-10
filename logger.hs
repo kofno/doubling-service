@@ -1,4 +1,5 @@
-module Logger ( initLogger
+module Logger ( Logger
+              , initLogger
               , logMessage
               , logStop
               ) where
