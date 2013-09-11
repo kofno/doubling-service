@@ -48,11 +48,20 @@ server h factor c = do
                          hPutStrLn h ("Thank you for using the " ++
                                       "Haskell Doubling Service")
                        '*':s -> do
-                         atomically $ writeTVar factor (read s :: Integer)
+                         case readInteger s of
+                              Left err -> hPutStrLn h err
+                              Right n  -> atomically $ writeTVar factor n
                          loop f
                        line -> do
-                         hPutStrLn h (show (f * (read line :: Integer)))
+                         case readInteger line of
+                              Left s  -> hPutStrLn h s
+                              Right n -> hPutStrLn h (show (f * n))
                          loop f
+
+readInteger :: String -> Either String Integer
+readInteger s = case (reads s :: [(Integer, String)]) of
+                     (n, ""):[] -> Right n
+                     otherwise  -> Left "Couldn't parse number"
 
 main :: IO ()
 main = withSocketsDo $ do
